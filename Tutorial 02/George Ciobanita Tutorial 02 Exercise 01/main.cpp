@@ -30,6 +30,9 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HRESULT InitialiseD3D();
 void ShutdownD3D();
 
+//Tutorial 2 Ex 1
+void RenderFrame(void);
+
 //////////////////////////////////////////////////////////////////////////////////////
 // Entry point to the program. Initializes everything and goes into a message processing
 // loop. Idle time is used to render the scene.
@@ -62,7 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		else
 		{
-				// do something
+			RenderFrame();
 		}
 	}
 
@@ -178,6 +181,30 @@ HRESULT InitialiseD3D()
 	}
 	if (FAILED(hr))
 		return hr;
+
+	//Tutorial 2 Exercise 1
+	// Get pointer to back buffer texture
+	ID3D11Texture2D *pBackBufferTexture;
+	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+		(LPVOID*)&pBackBufferTexture);
+	if (FAILED(hr)) return hr;
+	// Use the back buffer texture pointer to create the render target view
+	hr = g_pD3DDevice->CreateRenderTargetView(pBackBufferTexture, NULL,
+		&g_pBackBufferRTView);
+	pBackBufferTexture->Release();
+	if (FAILED(hr)) return hr;
+	// Set the render target view
+	g_pImmediateContext->OMSetRenderTargets(1, &g_pBackBufferRTView, NULL);
+	// Set the viewport
+	D3D11_VIEWPORT viewport;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = width;//uint conversion to float here, warning generated
+	viewport.Height = height;//same thing here
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	g_pImmediateContext->RSSetViewports(1, &viewport);
+
 	return S_OK;
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +212,20 @@ HRESULT InitialiseD3D()
 //////////////////////////////////////////////////////////////////////////////////////
 void ShutdownD3D()
 {
+	if (g_pBackBufferRTView) g_pBackBufferRTView->Release();
 	if (g_pSwapChain) g_pSwapChain->Release();
 	if (g_pImmediateContext) g_pImmediateContext->Release();
 	if (g_pD3DDevice) g_pD3DDevice->Release();
 }
+
+//Tutorial 2 Exercise 1
+// Render frame
+void RenderFrame(void)
+{
+	// Clear the back buffer - choose a colour you like
+	float rgba_clear_colour[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
+	g_pImmediateContext->ClearRenderTargetView(g_pBackBufferRTView, rgba_clear_colour);
+	// RENDER HERE
+	// Display what has just been rendered
+	g_pSwapChain->Present(0, 0);
+}
