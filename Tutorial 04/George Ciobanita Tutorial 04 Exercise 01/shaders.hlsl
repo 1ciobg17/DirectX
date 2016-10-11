@@ -7,7 +7,7 @@ cbuffer CBuffer0
 struct VOut
 {
 	float4 position : SV_POSITION;
-	float color : COLOR;
+	float4 color : COLOR;
 };
 
 VOut VShader(float4 position : POSITION, float4 color : COLOR)
