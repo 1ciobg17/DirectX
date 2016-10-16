@@ -13,7 +13,7 @@
 HINSTANCE g_hInst = NULL;
 HWND g_hWnd = NULL;
 // Rename for each tutorial
-char g_TutorialName[100] = "Tutorial 04 Exercise 02\0";
+char g_TutorialName[100] = "Tutorial 05 Exercise 01\0";
 
 //Tutorial 1 Ex 2
 D3D_DRIVER_TYPE g_driverType = D3D_DRIVER_TYPE_NULL;
