@@ -11,6 +11,7 @@
 #include "text2D.h"//tutorial 8, ex 2
 #include "Model.h"//tutorial 10, ex 1
 #include <dinput.h>//tutorial 13, ex 1
+#include "maths.h"
 #include "scene_node.h"
 //////////////////////////////////////////////////////////////////////////////////////
 // Global Variables
@@ -18,7 +19,7 @@
 HINSTANCE g_hInst = NULL;
 HWND g_hWnd = NULL;
 // Rename for each tutorial
-char g_TutorialName[100] = "Tutorial 15 Exercise 01\0";
+char g_TutorialName[100] = "Tutorial 16 Exercise 01\0";
 
 //Tutorial 1 Ex 2
 D3D_DRIVER_TYPE g_driverType = D3D_DRIVER_TYPE_NULL;
@@ -102,6 +103,8 @@ scene_node* g_node2;
 scene_node* g_cameraNode;
 Model* g_cameraModel;
 
+string test=NULL;
+Maths* math;
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -773,8 +776,8 @@ void RenderFrame(void)
 	g_root_node->execute(&identity, &view, &projection, g_ambient_light_colour, g_directional_light_colour, g_directional_light_shines_from);
 	
 	//tutorial 8, ex2
-	//g_2DText->RenderText();
-	//g_2DText->AddText("hi", -1.0, +1.0, .2);
+	g_2DText->RenderText();
+	g_2DText->AddText(test, -1.0, +1.0, .2);
 
 	// RENDER HERE
 	// Display what has just been rendered
