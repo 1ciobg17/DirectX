@@ -8,6 +8,11 @@ GameManager::GameManager()
 {
 	m_Input = 0;
 	m_Graphics = 0;
+	m_FPS = 0;
+	m_CPU = 0;
+	m_Timer = 0;
+	m_cameraPosition = 0;
+	m_Camera = 0;
 }
 
 GameManager::GameManager(const GameManager& other)
@@ -22,6 +27,7 @@ bool GameManager::Initialize()
 {
 	int screenWidth, screenHeight;
 	bool result;
+	D3DXMATRIX baseViewMatrix;
 
 	//Initialize the width and height of the screen to zero before sending the variables into the function
 	screenWidth = 0;
@@ -37,7 +43,26 @@ bool GameManager::Initialize()
 		return false;
 	}
 
-	m_Input->Initialize();
+	//initielize the input
+	result = m_Input->Initialize(m_hInstance, m_hWnd, screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(m_hWnd, L"Could not initialize the input object", L"Error", MB_OK);
+		return false;
+	}
+
+	//Create the camera
+	m_Camera = new Camera();
+	if (!m_Camera)
+	{
+		return false;
+	}
+
+	//initialize a base view matrix with the camera for 2d user isntance rendering
+	m_Camera->SetPosition(0.0f, 0.0f, -1.0f);
+	m_Camera->Render();
+	m_Camera->GetViewMatrix(baseViewMatrix);
+	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
 	//Create the Graphics object. This object will handle rendering all the graphics for this application
 	m_Graphics = new GraphicsClass;
@@ -47,8 +72,49 @@ bool GameManager::Initialize()
 	}
 
 	//Initialize the graphics object
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hWnd);
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hWnd, baseViewMatrix);
 	if (!result)
+	{
+		return false;
+	}
+
+	//create the fps object
+	m_FPS = new FPSClass;
+	if (!m_FPS)
+	{
+		return false;
+	}
+
+	//Initialize the FPS object
+	m_FPS->Initialize();
+
+	//create the cpu object
+	m_CPU = new CPUClass;
+	if (!m_CPU)
+	{
+		return false;
+	}
+
+	//initialize the cpu object
+	m_CPU->Initialize();
+
+	//create the timer object
+	m_Timer = new TimerClass;
+	if (!m_Timer)
+	{
+		return false;
+	}
+
+	result=m_Timer->Initialize();
+	if (!result)
+	{
+		MessageBox(m_hWnd, L"Could not initialize the Timer object", L"Error", MB_OK);
+		return false;
+	}
+
+	//create the camera position object
+	m_cameraPosition = new MovementClass;
+	if (!m_cameraPosition)
 	{
 		return false;
 	}
@@ -58,6 +124,42 @@ bool GameManager::Initialize()
 
 void GameManager::Shutdown()
 {
+	//release the camera position object
+	if (m_cameraPosition)
+	{
+		delete m_cameraPosition;
+		m_cameraPosition = 0;
+	}
+
+	//release the camera
+	if (m_Camera)
+	{
+		delete m_Camera;
+		m_Camera = 0;
+	}
+
+	//release the timer object
+	if (m_Timer)
+	{
+		delete m_Timer;
+		m_Timer = 0;
+	}
+
+	//release the cpu object
+	if (m_CPU)
+	{
+		m_CPU->Shutdown();
+		delete m_CPU;
+		m_CPU = 0;
+	}
+
+	//relase the fps object
+	if (m_FPS)
+	{
+		delete m_FPS;
+		m_FPS = 0;
+	}
+
 	//Release the graphics object
 	if (m_Graphics)
 	{
@@ -69,6 +171,7 @@ void GameManager::Shutdown()
 	//Release the input object
 	if (m_Input)
 	{
+		m_Input->Shutdown();
 		delete m_Input;
 		m_Input;
 	}
@@ -109,8 +212,15 @@ void GameManager::Run()
 			result = Frame();
 			if (!result)
 			{
+				MessageBox(m_hWnd, L"Frame processing failed", L"Error", MB_OK);
 				done = true;
 			}
+		}
+
+		//check if the user pressed escape and wants to quit
+		if (m_Input->IsEscapePressed() == true)
+		{
+			done = true;
 		}
 	}
 
@@ -119,16 +229,58 @@ void GameManager::Run()
 
 bool GameManager::Frame()
 {
-	bool result;
+	bool result, keyDown;
+	int mouseX, mouseY;
+	float posX, posY, posZ, rotX, rotY, rotZ;
+	D3DXMATRIX viewMatrix;
 
-	//Check if the user pressed escape and wants to exit the application
-	if (m_Input->IsKeyDown(VK_ESCAPE))
+	//update the system starts
+	m_Timer->Frame();
+	m_FPS->Frame();
+	m_CPU->Frame();
+
+	//input frame processing happens here
+	result = m_Input->Frame();
+	if (!result)
 	{
 		return false;
 	}
 
+	m_cameraPosition->SetFrameTime(m_Timer->GetTime());
+
+	keyDown = m_Input->IsLeftArrowPressed();
+	m_cameraPosition->TurnLeft(keyDown);
+
+	keyDown = m_Input->IsRightArrowPressed();
+	m_cameraPosition->TurnRight(keyDown);
+
+	keyDown = m_Input->IsUpArrowPressed();
+	m_cameraPosition->LookUp(keyDown);
+
+	keyDown = m_Input->IsDownArrowPressed();
+	m_cameraPosition->LookDown(keyDown);
+
+	keyDown = m_Input->IsWPressed();
+	m_cameraPosition->Forward(keyDown);
+
+	keyDown = m_Input->IsSPressed();
+	m_cameraPosition->Backward(keyDown);
+
+	m_cameraPosition->GetPosition(posX, posY, posZ);
+	m_cameraPosition->GetRotation(rotX, rotY, rotZ);
+
+	m_Camera->SetPosition(posX, posY, posZ);
+	m_Camera->SetRotation(rotX, rotY, rotZ);
+
+	//get the mouse cursor location from the input object
+	m_Input->GetMouseLocation(mouseX, mouseY);
+
+	//Generate the view matrix based on the camera's position
+	m_Camera->Render();
+	m_Camera->GetViewMatrix(viewMatrix);
+
 	//Do the frame processing for the graphics object
-	result = m_Graphics->Frame();
+	result = m_Graphics->Frame(m_FPS->GetFPS(), m_CPU->GetCPUPercentage(), m_Timer->GetTime(), mouseX, mouseY, viewMatrix);
 	if (!result)
 	{
 		return false;
@@ -139,30 +291,7 @@ bool GameManager::Frame()
 
 LRESULT CALLBACK GameManager::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
-	switch (umsg)
-	{
-		//Check if a key has been pressed on the keyboard
-		case WM_KEYDOWN:
-		{
-			//if a key is pressed send it to the input object so it can record that state
-			m_Input->KeyDown((unsigned int)wparam);
-			return 0;
-		}
-
-		//check if a key has been released on the keyboard
-		case WM_KEYUP:
-		{
-			//if a key is released then send it to the input object so it can unset the state for that key
-			m_Input->KeyUp((unsigned int)wparam);
-			return 0;
-		}
-
-		//any other message send to the default message handler as our application won't make use of them
-		default:
-		{
-			return DefWindowProc(hwnd, umsg, wparam, lparam);
-		}
-	}
+	return DefWindowProc(hwnd, umsg, wparam, lparam);	
 }
 
 void GameManager::InitializeWindows(int& screenWidth, int& screenHeight)

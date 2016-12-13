@@ -8,7 +8,7 @@ cbuffer LightBuffer
 {
 	float4 diffuseColor;
 	float3 lightDirection;
-	float padding
+	float padding;
 };
 
 cbuffer MatrixBuffer
@@ -29,7 +29,7 @@ struct PixelInputType
 {
 	float4 position:SV_POSITION;
 	float2 tex:TEXCOORD0;
-	float3 normal:NORMAL:
+	float3 normal:NORMAL;
 };
 
 //Vertex Shader

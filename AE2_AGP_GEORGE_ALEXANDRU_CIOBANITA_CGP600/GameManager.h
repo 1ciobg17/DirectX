@@ -8,6 +8,11 @@
 #include <iostream>
 #include "InputClass.h"
 #include "GraphicsClass.h"
+#include "FPSClass.h"
+#include "CPUClass.h"
+#include "TimerClass.h"
+#include "MovementClass.h"
+#include "Camera.h"
 using namespace std;
 
 //////////////////////////////////
@@ -23,6 +28,13 @@ private:
 
 	InputClass* m_Input;
 	GraphicsClass* m_Graphics;
+
+	FPSClass* m_FPS;
+	CPUClass* m_CPU;
+	TimerClass* m_Timer;
+
+	MovementClass* m_cameraPosition;
+	Camera* m_Camera;
 
 	bool Frame();
 	void InitializeWindows(int&, int&);

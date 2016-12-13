@@ -26,6 +26,8 @@ private:
 	D3DXMATRIX m_projectionMatrix;
 	D3DXMATRIX m_worldMatrix;
 	D3DXMATRIX m_orthoMatrix;
+	ID3D11BlendState* m_alphaEnableBlendingState;
+	ID3D11BlendState* m_alphaDisableBlendingState;
 public:
 	D3DClass();
 	D3DClass(const D3DClass&);
@@ -45,4 +47,7 @@ public:
 	void GetOrthoMatrix(D3DMATRIX&);
 
 	void GetVideoCardInfo(char*, int&);
+
+	void TurnOnAlphaBlending();
+	void TurnOffAlphaBlending();
 };
