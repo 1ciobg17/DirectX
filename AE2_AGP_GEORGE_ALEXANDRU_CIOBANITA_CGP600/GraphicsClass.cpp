@@ -66,7 +66,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, D3D
 	}
 
 	//initialize the model
-	result = m_Model->Initialize(m_D3D->GetDevice(),"assets/cube.txt",L"assets/seafloor.dds");
+	result = m_Model->Initialize(m_D3D->GetDevice(),"assets/cube.obj",L"assets/seafloor.dds", m_D3D->GetDeviceContext());
 	if (FAILED(result))
 	{
 		MessageBox(hwnd, L"Could not initialize the model object", L"Error", MB_OK);
@@ -223,8 +223,8 @@ bool GraphicsClass::Render(float rotation, D3DXMATRIX viewmatrix)
 	//put the model vertex and index buffers on the graphics pipeline to prepare them for drawing
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	//Render the model using the color shader
-	result = m_lightShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_light->GetDirection(), m_light->GetDiffuseColor());
+	//Render the model using the light shader
+	result = m_lightShader->Render(m_D3D->GetDeviceContext(), m_Model->GetVertexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_light->GetDirection(), m_light->GetDiffuseColor());
 	if (!result)
 	{
 		return false;

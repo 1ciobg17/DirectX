@@ -7,6 +7,7 @@
 #include <D3DX10math.h>
 #include "TextureClass.h"
 #include <fstream>
+#include "objfilemodel.h"
 using namespace std;
 
 /////////////////////////
@@ -35,6 +36,7 @@ private:
 	TextureClass* m_Texture;
 
 	ModelType* m_model;
+	ObjFileModel* m_object;
 
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
@@ -43,18 +45,19 @@ private:
 	bool LoadTexture(ID3D11Device*, WCHAR*);
 	void ReleaseTexture();
 
-	bool LoadModel(char*);
+	bool LoadModel(char*, ID3D11Device*, ID3D11DeviceContext*);
 	void ReleaseModel();
 public:
 	Models();
 	Models(const Models&);
 	~Models();
 
-	bool Initialize(ID3D11Device*,char*,WCHAR*);
+	bool Initialize(ID3D11Device*, char*, WCHAR*, ID3D11DeviceContext*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
+	int GetVertexCount();
 
 	ID3D11ShaderResourceView* GetTexture();
 };
