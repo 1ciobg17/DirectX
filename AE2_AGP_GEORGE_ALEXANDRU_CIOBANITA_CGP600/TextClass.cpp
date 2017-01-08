@@ -11,6 +11,7 @@ TextClass::TextClass()
 	m_CPUSentence = 0;
 	m_mouseXPos = 0;
 	m_mouseYPos = 0;
+	m_collisionCheck = 0;
 }
 TextClass::TextClass(const TextClass& other)
 {
@@ -87,6 +88,12 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
+	result = InitializeSentence(&m_collisionCheck, 16, device);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -103,6 +110,8 @@ void TextClass::Shutdown()
 
 	//release the mouse Y sentence
 	ReleaseSentence(&m_mouseYPos);
+	
+	//release the collision check sentence
 
 	//release the font shader object
 	if (m_fontShader)
@@ -150,6 +159,12 @@ bool TextClass::Render(ID3D11DeviceContext* deviceContext, D3DXMATRIX worldMatri
 
 	//draw the second sentence 
 	result = RenderSentence(deviceContext, m_mouseYPos, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = RenderSentence(deviceContext, m_collisionCheck, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -483,6 +498,30 @@ bool TextClass::SetMousePosition(int mouseX, int mouseY, ID3D11DeviceContext* de
 
 	//update the sentence vertex buffer
 	result = UpdateSentence(m_mouseYPos, mouseString, 20, 80, 1.0f, 1.0f, 1.0f, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool TextClass::SetUpCollision(string collision, ID3D11DeviceContext* deviceContext)
+{
+	char tempString[16];
+	char collString[16];
+	char buffer[16];
+	bool result;
+
+	sprintf_s(buffer, "%.4s", collision.c_str());
+
+	strcpy_s(tempString, buffer);
+
+	//setup the coll string
+	strcpy_s(collString, "Collision: ");
+	strcat_s(collString, tempString);
+
+	result = UpdateSentence(m_collisionCheck, collString, 20, 100, 1.0f, 1.0f, 1.0f, deviceContext);
 	if (!result)
 	{
 		return false;
