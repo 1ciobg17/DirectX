@@ -32,6 +32,7 @@ private:
 	SentenceType* m_CPUSentence;
 	SentenceType* m_mouseXPos;
 	SentenceType* m_mouseYPos;
+	SentenceType* m_collisionCheck;
 
 	bool InitializeSentence(SentenceType**, int, ID3D11Device*);
 	bool UpdateSentence(SentenceType*, char*, int, int, float, float, float, ID3D11DeviceContext*);
@@ -50,4 +51,6 @@ public:
 	bool SetCPU(int, ID3D11DeviceContext*);
 
 	bool SetMousePosition(int, int, ID3D11DeviceContext*);
+
+	bool SetUpCollision(string, ID3D11DeviceContext*);
 };
