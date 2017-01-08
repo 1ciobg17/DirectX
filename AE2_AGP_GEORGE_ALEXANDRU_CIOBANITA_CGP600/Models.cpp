@@ -9,7 +9,8 @@ Models::Models()
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
 	m_Texture = 0;
-	m_model = 0;
+	m_position = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	m_rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 }
 
 Models::Models(const Models& other)
@@ -20,6 +21,18 @@ Models::Models(const Models& other)
 Models::~Models()
 {
 
+}
+
+void Models::SetPosition(float x, float y, float z)
+{
+	m_position = D3DXVECTOR3(x, y, z);
+	return;
+}
+
+void Models::SetRotation(float x, float y, float z)
+{
+	m_rotation = D3DXVECTOR3(x, y, z);
+	return;
 }
 
 bool Models::Initialize(ID3D11Device* device,char* filename, WCHAR* textureFilename, ID3D11DeviceContext* deviceContext)
@@ -33,7 +46,7 @@ bool Models::Initialize(ID3D11Device* device,char* filename, WCHAR* textureFilen
 		return false;
 	}
 
-	//Initialize the vertex and index buffer that hold the geometry for the triangle
+	//Initialize the vertex and index buffer that hold the geometry for the model
 	result = InitializeBuffers(device);
 	if (!result)
 	{
@@ -58,18 +71,25 @@ void Models::Shutdown()
 	//Release the vertex and index buffers
 	ShutdownBuffers();
 
-	//release the model data
-	ReleaseModel();
-
 	return;
 }
 
-void Models::Render(ID3D11DeviceContext* deviceContext)
+bool Models::Render(ID3D11DeviceContext* deviceContext, LightShaderClass* lightShader, D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix, D3DXMATRIX projectionMatrix, LightClass* light)
 {
+	HRESULT result;
+	D3DXMATRIX endMatrix, rotXMatrix, rotYMatrix, rotZMatrix, endRotation;
+
 	//Put the vertex and index buffers on the graphics pipeline to prepare them for drawing
 	RenderBuffers(deviceContext);
 
-	return;
+	//Render the model using the light shader
+	result = lightShader->Render(deviceContext,GetVertexCount(), worldMatrix, viewMatrix, projectionMatrix, GetTexture(), light->GetDirection(),light->GetAmbientColor(),light->GetDiffuseColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 int Models::GetIndexCount()
@@ -230,8 +250,6 @@ void Models::ReleaseTexture()
 	if (m_Texture)
 	{
 		m_Texture->Shutdown();
-		delete m_Texture;
-		m_Texture = 0;
 	}
 
 	return;
@@ -298,16 +316,91 @@ bool Models::LoadModel(char* filename, ID3D11Device* device, ID3D11DeviceContext
 	m_vertexCount = m_object->numverts;
 	m_indexCount = m_vertexCount;
 
+	CalculateModelCentrePoint();
+	CalculateBoundingSphereRadius();
+
 	return true;
 }
 
-void Models::ReleaseModel()
+void Models::CalculateModelCentrePoint()
 {
-	if (m_model)
+	float minx = 0.0f, miny = 0.0f, minz = 0.0f, maxx = 0.0f, maxy = 0.0f, maxz = 0.0f;
+	for (int i = 0; i < m_object->numverts; i++)
 	{
-		delete[] m_model;
-		m_model = 0;
+		if (m_object->vertices[i].Pos.x < minx)
+		{
+			minx = m_object->vertices[i].Pos.x;
+		}
+		else
+		{
+			if (m_object->vertices[i].Pos.x > maxx)
+			{
+				maxx = m_object->vertices[i].Pos.x;
+			}
+		}
+		if (m_object->vertices[i].Pos.y < miny)
+		{
+			miny = m_object->vertices[i].Pos.y;
+		}
+		else
+		{
+			if (m_object->vertices[i].Pos.y > maxy)
+			{
+				maxy = m_object->vertices[i].Pos.y;
+			}
+		}
+		if (m_object->vertices[i].Pos.z < minz)
+		{
+			minz = m_object->vertices[i].Pos.z;
+		}
+		else
+		{
+			if (m_object->vertices[i].Pos.z > maxz)
+			{
+				maxz = m_object->vertices[i].Pos.z;
+			}
+		}
 	}
 
+	m_bounding_sphere_centre_x = (minx + maxx) / 2;
+	m_bounding_sphere_centre_y = (miny + maxy) / 2;
+	m_bounding_sphere_centre_z = (minz + maxz) / 2;
 	return;
+}
+
+void Models::CalculateBoundingSphereRadius()
+{
+	float maxDistance = 0.0f, newDistance = 0.0f;
+	for (int i = 0; i < m_object->numverts; i++)
+	{
+		newDistance = sqrt(m_object->vertices[i].Pos.x*m_object->vertices[i].Pos.x +
+			m_object->vertices[i].Pos.y*m_object->vertices[i].Pos.y +
+			m_object->vertices[i].Pos.z*m_object->vertices[i].Pos.z);
+		if (newDistance > maxDistance)
+		{
+			maxDistance = newDistance;
+		}
+	}
+	m_bounding_sphere_centre_radius = maxDistance;
+	return;
+}
+
+float Models::GetBoundingSphereRadius()
+{
+	return m_bounding_sphere_centre_radius;
+}
+
+float Models::GetBoundingSphereX()
+{
+	return m_bounding_sphere_centre_x;
+}
+
+float Models::GetBoundingSphereY()
+{
+	return m_bounding_sphere_centre_y;
+}
+
+float Models::GetBoundingSphereZ()
+{
+	return m_bounding_sphere_centre_z;
 }

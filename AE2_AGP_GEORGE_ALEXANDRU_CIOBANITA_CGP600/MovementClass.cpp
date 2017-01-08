@@ -11,6 +11,7 @@ MovementClass::MovementClass()
 	m_rotX = 0;
 	m_rotY = 0;
 	m_rotZ = 0;
+	m_scale = 1.0f;
 	m_frameTime = 0;
 	m_forwardSpeed = 0;
 	m_backwardSpeed = 0;
@@ -136,6 +137,17 @@ float MovementClass::GetZRot()
 	return m_rotZ;
 }
 
+void MovementClass::SetScale(float scale)
+{
+	m_scale = scale;
+	return;
+}
+
+float MovementClass::GetScale()
+{
+	return m_scale;
+}
+
 void MovementClass::Forward(bool input)
 {
 	//convert to radians
@@ -192,6 +204,15 @@ void MovementClass::Backward(bool input)
 
 	return;
 }
+
+void MovementClass::NewForward(float distance)
+{
+	float radians = m_rotY*(XM_PI / 180);
+
+	m_posX += sinf(radians)*distance;
+	m_posZ += cosf(radians)*distance;
+}
+
 
 void MovementClass::Upward(bool input)
 {
