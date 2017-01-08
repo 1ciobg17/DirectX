@@ -98,3 +98,26 @@ void Camera::GetViewMatrix(D3DXMATRIX& viewMatrix)
 	return;
 }
 
+XMMATRIX Camera::GetViewMatrixXMMATRIX()
+{
+	XMVECTOR position, lookat, up;
+	float yaw, pitch, roll;
+	XMMATRIX rotationMatrix;
+
+	position = XMVectorSet(m_positionX, m_positionY, m_positionZ, 0.0);
+	up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	lookat = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+	pitch = m_rotationX*(XM_PI / 180);
+	yaw = m_rotationY*(XM_PI / 180);
+	roll = m_rotationZ*(XM_PI / 180);
+
+	rotationMatrix=XMMatrixRotationRollPitchYaw(roll, pitch, yaw);
+	lookat=XMVector3TransformCoord(lookat, rotationMatrix);
+	up = XMVector3TransformCoord(up, rotationMatrix);
+	lookat = position + lookat;
+
+	XMMATRIX view = XMMatrixLookAtLH(position, lookat, up);
+
+	return view;
+}

@@ -4,6 +4,8 @@
 #pragma once
 
 #include <D3DX10math.h>
+#define _XM_NO_INTRINSIcS_
+#define XM_NO_ALIGNMENT
 #include <xnamath.h>
 
 //////////////////////
@@ -28,4 +30,5 @@ public:
 	
 	void Render();
 	void GetViewMatrix(D3DXMATRIX&);
+	XMMATRIX GetViewMatrixXMMATRIX();
 };

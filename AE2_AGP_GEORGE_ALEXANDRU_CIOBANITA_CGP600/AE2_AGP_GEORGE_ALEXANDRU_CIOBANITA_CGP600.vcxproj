@@ -91,6 +91,9 @@
     <ClCompile Include="Models.cpp" />
     <ClCompile Include="MovementClass.cpp" />
     <ClCompile Include="objfilemodel.cpp" />
+    <ClCompile Include="SceneNode.cpp" />
+    <ClCompile Include="SkyDome.cpp" />
+    <ClCompile Include="SkyShader.cpp" />
     <ClCompile Include="TextClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TextureShaderClass.cpp" />
@@ -112,6 +115,9 @@
     <ClInclude Include="Models.h" />
     <ClInclude Include="MovementClass.h" />
     <ClInclude Include="objfilemodel.h" />
+    <ClInclude Include="SceneNode.h" />
+    <ClInclude Include="SkyDome.h" />
+    <ClInclude Include="SkyShader.h" />
     <ClInclude Include="TextClass.h" />
     <ClInclude Include="TextureClass.h" />
     <ClInclude Include="TextureShaderClass.h" />

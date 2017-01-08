@@ -22,12 +22,15 @@ private:
 	ID3D11Texture2D* m_depthStencilBuffer;
 	ID3D11DepthStencilState* m_depthStencilState;
 	ID3D11DepthStencilView* m_depthStencilView;
+	ID3D11DepthStencilView* m_ZBuffer;
 	ID3D11RasterizerState* m_rasterState;
 	D3DXMATRIX m_projectionMatrix;
 	D3DXMATRIX m_worldMatrix;
 	D3DXMATRIX m_orthoMatrix;
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
+	ID3D11RasterizerState* m_rasterStateNoCulling;
+	ID3D11DepthStencilState* m_depthDisabledStencilState;
 public:
 	D3DClass();
 	D3DClass(const D3DClass&);
@@ -50,4 +53,12 @@ public:
 
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
+
+	void TurnOnCulling();
+	void TurnOffCulling();
+
+	void TurnOnZBuffer();
+	void TurnOffZBuffer();
+
+	void SetBackStates();
 };
